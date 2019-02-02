@@ -8,11 +8,16 @@ var server = app.listen(port, function () {
     console.log('listening for requests on port ' + port);
 });
 
-// Static files
-app.use(express.static('public'));
-
-// Online nibas 
+// Online nibas
 var online = [];
+
+// Static files
+app.get('/', (req, res) => {
+    res.render('index.ejs', {
+        count: online.length + 1
+    });
+});
+app.use(express.static('public'));
 
 // Socket setup & pass server
 var io = socket(server);
