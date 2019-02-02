@@ -2,6 +2,12 @@
 var socket = io.connect('https://rishavchat.herokuapp.com/');
 //var socket = io.connect('127.0.0.1:80');
 
+// Random number function
+function randomIntFromInterval(min, max) // min and max included
+{
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
 // Save cookies to remember username
 function setCookie(name, value, days) {
     var expires = "";
@@ -44,27 +50,45 @@ $(document).ready(function () {
     var x = getCookie('handle');
     if (x) {
         handle.value = x;
+    } else {
+        handle.value = 'user' + String(randomIntFromInterval(1000, 9999))
     }
+
+    socket.emit('user-joined', {
+        handle: handle.value
+    });
 
     // Set handle name in the cookie
     $('#handle').focusout(function () {
-        setCookie('handle', handle.value, 1);
+        var temp = getCookie('handle');
+        if (temp === handle.value || handle.value === '') {
+            handle.value = temp;
+        } else {
+            // Update in online variable
+            socket.emit('name-change', {
+                handle: handle.value
+            });
+            // Set the cookie for later use
+            setCookie('handle', handle.value, 1);
+        }
     });
 
     // Defining audio elements
     audioElement = document.createElement('audio');
-    audioElement.setAttribute('src', 'http://soundbible.com/mp3/Pling-KevanGC-1485374730.mp3');
-    
+    audioElement.setAttribute('src', 'https://soundbible.com/mp3/Pling-KevanGC-1485374730.mp3');
+
     // Emit events
     btn.addEventListener('click', function () {
         if (message.value !== '') {
-            socket.emit('chat', {
-                message: message.value,
-                handle: handle.value
-            });
-            message.value = "";
+            if (handle.value !== '') {
+                socket.emit('chat', {
+                    message: message.value,
+                    handle: handle.value
+                });
+                message.value = "";
+            }
         } else {
-            // Do nothing
+            // Warn the retarded user
         }
     });
 
@@ -79,11 +103,39 @@ $(document).ready(function () {
         output.innerHTML += '<p><strong>' + data.handle + ': </strong>' + data.message + '</p>';
         $("#chat-window").stop().animate({
             scrollTop: $("#output")[0].scrollHeight
-        }, 1000);
+        }, 800);
     });
 
     socket.on('typing', function (data) {
         feedback.innerHTML = '<p><em>' + data + ' is typing a message...</em></p>';
+        $("#chat-window").stop().animate({
+            scrollTop: $("#output")[0].scrollHeight
+        }, 800);
+    });
+
+    socket.on('user-joined', function (data) {
+        audioElement.play();
+        $('#onliner').text('Secret Chat (' + data.online + ' online)');
+        output.innerHTML += '<h3>' + data.handle + ' has joined the chat!</h3>';
+        $("#chat-window").stop().animate({
+            scrollTop: $("#output")[0].scrollHeight
+        }, 1000);
+    });
+
+    socket.on('disconnect', function (data) {
+        audioElement.play();
+        $('#onliner').text('Secret Chat (' + data[1] + ' online)');
+        output.innerHTML += '<h3>' + data[0] + ' has left the chat!</h3>';
+        $("#chat-window").stop().animate({
+            scrollTop: $("#output")[0].scrollHeight
+        }, 1000);
+    });
+
+    socket.on('name-change', function (data) {
+        output.innerHTML += '<h3>' + data[0] + ' changed their name to ' + data[1] + '</h3>';
+        $("#chat-window").stop().animate({
+            scrollTop: $("#output")[0].scrollHeight
+        }, 1000);
     });
 
     // Enter handlers
