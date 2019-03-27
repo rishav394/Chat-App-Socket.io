@@ -1,6 +1,7 @@
 var express = require('express');
 var socket = require('socket.io');
 var cors = require('cors');
+var ssl = require('heroku-ssl-redirect');
 
 // App setup
 var app = express();
@@ -11,6 +12,7 @@ var server = app.listen(port, function() {
 
 //cors
 app.use(cors());
+app.use(ssl());
 
 // Online nibas
 var online = [];
