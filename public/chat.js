@@ -1,6 +1,6 @@
 // Make connection
 // Choose depending on connection type
-var socket = io.connect('https://rishavchat.herokuapp.com/');
+var socket = io.connect('https://rishavsocketchat.herokuapp.com/');
 // var socket = io.connect('127.0.0.1:80');
 
 // Random number function

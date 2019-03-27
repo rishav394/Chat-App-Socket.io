@@ -1,5 +1,6 @@
 var express = require('express');
 var socket = require('socket.io');
+var cors = require('cors');
 
 // App setup
 var app = express();
@@ -7,6 +8,9 @@ var port = process.env.PORT || 80;
 var server = app.listen(port, function() {
 	console.log('listening for requests on port ' + port);
 });
+
+//cors
+app.use(cors());
 
 // Online nibas
 var online = [];
